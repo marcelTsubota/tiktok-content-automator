@@ -327,17 +327,44 @@ def main():
             write_if(pack / "RESPOSTA_prompt_03_invideo_READY.txt", invideo_ready)
         else:
             invideo_ready = "[Sem prompt_03_invideo.txt]"
+            
+        # 4) DESCRIÇÃO PARA TIKTOK (gera 1 bloco curto + 8–12 hashtags)
+        try:
+            # Deriva um nome legível do pack (remove prefixo "001-" e troca hifens por espaços)
+            _prod = re.sub(r"^\d{3}-", "", pack.name).replace("-", " ").strip().title()
 
-        # 5) Consolida o final
-        final_dir = result_dir_for(pack)
-        final_path = result_path_for(pack)
+            desc_prompt = (
+                "Escreva UMA descrição curta (2–3 frases) para TikTok em pt-BR, seguida de 8–12 hashtags específicas do nicho.\n"
+                f"Produto: {_prod}\n"
+                "Use linguagem direta e um CTA curto (ex.: 'Link na bio'). Evite emojis excessivos.\n"
+                "Use o roteiro abaixo como contexto, sem copiar literalmente:\n"
+                f"---\n{roteiro_out}\n---"
+            )
+            desc_tiktok_out = ask_openai(desc_prompt, args.model, args.temperature, system=MASTER_SYSTEM)
+        except Exception as e:
+            # Fallback sem API (ou em caso de erro)
+            desc_tiktok_out = (
+                f"Descubra {_prod} — prático e de alta qualidade para o dia a dia. "
+                "Conforto, desempenho e ótimo custo-benefício. Link na bio.\n\n"
+                "#Tecnologia #DicaDoDia #Achadinhos #Promo #LojaOnline #Ofertas #Review #ParaVocê #Tendências"
+            )
+
+        # 5) Consolida o final — salva em <base>/<pack.name>/<pack.name>.txt
+        base = final_root if final_root else pack
+        final_dir = (base / pack.name)
+        final_dir.mkdir(parents=True, exist_ok=True)  # garante a pasta do pack
+
+        final_path = final_dir / f"{pack.name}.txt"
+
         full = []
         full.append(f"# {pack.name}\n")
         full.append("## IMAGENS (ChatGPT)\n"); full.append(imagens_out or "")
         full.append("\n## ROTEIRO (ChatGPT)\n"); full.append(roteiro_out or "")
         full.append("\n## INVIDEO (READY)\n"); full.append(invideo_ready or "")
+        full.append("\n### DESCRIÇÃO (TIKTOK)\n"); full.append(desc_tiktok_out or "")
         write(final_path, "\n".join(full))
         print(f"✅ pronto: {final_path}")
+        
 
         # 6) (Opcional) Baixar imagem(ns) do produto para a MESMA pasta do final
         if args.download_image:

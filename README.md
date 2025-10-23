@@ -3,16 +3,9 @@
 Automação completa para geração de **roteiros, descrições, hashtags e assets** de vídeos curtos (9:16) para TikTok — totalmente impulsionada por IA.
 O projeto lê uma planilha de produtos, gera prompts com base em um guia de criação, preenche scripts automaticamente e organiza os resultados em pastas prontas para produção.
 
-## PASSO-A-PASSO COMPLETO
+## COMANDO ÚNICO
 
-1. python tools/make_prompt_packs.py
-2. python tools/run_prompt_packs_openai.py --model gpt-4o-mini --temperature 0.7 --only-final --final-root "C:\Users\marce\OneDrive\OneDrive (C)\Área de Trabalho\ExpressTechTips" --download-image --images-from csv --csv-path data/batch_items.csv --max-images 1
-
-## Script para executar o projeto, gerar somente o arquivo com o resultado final e seleciona pasta:
-
-python tools/run_prompt_packs_openai.py --model gpt-4o-mini --temperature 0.7 --only-final --final-root "C:\Users\marce\OneDrive\OneDrive (C)\Área de Trabalho\ExpressTechTips" --download-image --images-from csv --csv-path data/batch_items.csv --max-images 1
-
-python tools/pipeline_oneclick.py --model gpt-4o-mini --temperature 0.7 --final-root "C:\Users\marce\OneDrive\OneDrive (C)\Área de Trabalho\ExpressTechTips" --download-image --images-from csv --csv-path "data\batch_items.csv" --max-images 1
+python tools\pipeline_oneclick.py --csv data\batch_items.csv --packs-root outputs\prompt_packs --final-root "C:\Users\marce\OneDrive\OneDrive (C)\Área de Trabalho\ExpressTechTips\estoque" --model gpt-4o-mini --temperature 0.7 --only-final --download-image --images-from csv --csv-path data\batch_items.csv --max-images 1
 
 # --only-final [SOMENTE O ARQUIVO COM O RESULTADO]
 
