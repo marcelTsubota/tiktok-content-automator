@@ -102,6 +102,12 @@ def main():
         )
         if urls:
             p01.append("Referências visuais (imagens reais do produto):\n" + "\n".join(urls))
+        p01.append(
+            "\nAgora, gere 6 descrições de imagem no formato abaixo, numeradas de 1 a 6.\n"
+            "Cada item deve começar com 'Gerar imagem X.' seguido de uma breve descrição.\n"
+            "Exemplo:\n"
+            "Gerar imagem 1. **Usando no Parque** Uma pessoa relaxando em um parque usando o produto.\n"
+        )
         prompt_01 = "\n".join(p01).strip() + "\n"
 
         p02 = f"""Gere um roteiro curto em pt-BR para TikTok do produto **{produto}**.
@@ -127,7 +133,6 @@ com 1–2 parágrafos + (opcional) bullets curtos e 10–15 hashtags relevantes 
         (pack_dir / "prompt_01_cenas.txt").write_text(prompt_01, encoding="utf-8")
         (pack_dir / "prompt_02_roteiro.txt").write_text(p02.strip() + "\n", encoding="utf-8")
         (pack_dir / "prompt_03_invideo.txt").write_text(p03.strip() + "\n", encoding="utf-8")
-        (pack_dir / "prompt_04_descricao_hashtags.txt").write_text(p04.strip() + "\n", encoding="utf-8")
 
         created += 1
         print(f"[{i:03d}] pack criado: {pack_dir.name}")
