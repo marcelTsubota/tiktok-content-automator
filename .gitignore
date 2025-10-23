@@ -23,3 +23,22 @@ Thumbs.db
 .env
 .env.*
 
+# Logs e relatórios
+*.log
+*.csv
+*.jsonl
+
+# Cache e builds
+build/
+dist/
+*.egg-info/
+
+# Notebooks temporários
+*.ipynb_checkpoints
+
+# IDEs adicionais
+.idea/
+*.code-workspace
+
+# Sistema (Windows / macOS)
+desktop.ini
