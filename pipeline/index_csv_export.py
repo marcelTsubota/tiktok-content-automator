@@ -6,7 +6,7 @@
 #   - Nome do produto (nome da pasta)
 #   - Primeira linha do roteiro
 #   - Quantidade de hashtags
-#   - Caminho do arquivo RESULTADO_COMPLETO.txt
+#   - Caminho do arquivo f"{pack.name}.txt"
 #
 # Salva em: outputs/index.csv
 
@@ -48,7 +48,7 @@ def main():
         produto = pack.name
         roteiro = extract_first_line(pack)
         hashtags = count_hashtags(pack)
-        resultado = pack / "RESULTADO_COMPLETO.txt"
+        resultado = (pack / f"{pack.name}.txt")
         rows.append([produto, roteiro, hashtags, resultado.as_posix()])
         print(f"✅ {produto}")
 

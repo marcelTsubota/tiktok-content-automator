@@ -125,10 +125,6 @@ No Captions, No avatar, No Narrator image.
 [roteiro Chatgpt]
 """
 
-        p04 = f"""Escreva uma descrição curta para o vídeo do produto **{produto}** em pt-BR,
-com 1–2 parágrafos + (opcional) bullets curtos e 10–15 hashtags relevantes (evite genéricas demais).
-"""
-
         # --------- Write files ---------
         (pack_dir / "prompt_01_cenas.txt").write_text(prompt_01, encoding="utf-8")
         (pack_dir / "prompt_02_roteiro.txt").write_text(p02.strip() + "\n", encoding="utf-8")

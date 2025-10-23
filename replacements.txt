@@ -1,2 +1,0 @@
-regex:(?i)OPENAI_API_KEY\s*=\s*["']?sk-[A-Za-z0-9_-]{20,}["']? ==> OPENAI_API_KEY=REDACTED
-regex:(?i)sk-[A-Za-z0-9_-]{20,} ==> REDACTED
