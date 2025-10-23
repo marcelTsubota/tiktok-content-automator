@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+
+# Virtual env
+env/
+venv/
+.venv/
+Scripts/
+pyvenv.cfg
+
+# Outputs
+outputs/
+!outputs/.gitkeep
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/

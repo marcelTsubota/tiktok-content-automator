@@ -1,0 +1,85 @@
+/
+├── .env
+├── .env.example
+├── .gitignore
+├── configs/
+│   ├── default.yaml
+├── data/
+│   ├── batch_items.csv
+├── estrutura.txt
+├── guides/
+│   ├── Guia criação dos vídeos.txt
+├── main.py
+├── outputs/
+│   ├── .gitkeep
+│   ├── asset_prompts.txt
+│   ├── caption.txt
+│   ├── description.txt
+│   ├── estrutura.txt
+│   ├── hashtags.txt
+│   ├── outputs.zip
+│   ├── prompt_packs/
+│   │   ├── 001-hub-docking-station/
+│   │   │   ├── prompt_01_cenas.txt
+│   │   │   ├── prompt_02_roteiro.txt
+│   │   │   ├── prompt_03_invideo.txt
+│   │   │   ├── prompt_03_invideo_ready.txt
+│   │   │   ├── prompt_04_descricao_hashtags.txt
+│   │   ├── 002-timer-digital/
+│   │   │   ├── prompt_01_cenas.txt
+│   │   │   ├── prompt_02_roteiro.txt
+│   │   │   ├── prompt_03_invideo.txt
+│   │   │   ├── prompt_03_invideo_ready.txt
+│   │   │   ├── prompt_04_descricao_hashtags.txt
+│   │   ├── 003-aspirador-portátil/
+│   │   │   ├── prompt_01_cenas.txt
+│   │   │   ├── prompt_02_roteiro.txt
+│   │   │   ├── prompt_03_invideo.txt
+│   │   │   ├── prompt_03_invideo_ready.txt
+│   │   │   ├── prompt_04_descricao_hashtags.txt
+│   │   ├── 004-caneta-laser/
+│   │   │   ├── prompt_01_cenas.txt
+│   │   │   ├── prompt_02_roteiro.txt
+│   │   │   ├── prompt_03_invideo.txt
+│   │   │   ├── prompt_03_invideo_ready.txt
+│   │   │   ├── prompt_04_descricao_hashtags.txt
+│   │   ├── 005-desk-pad/
+│   │   │   ├── prompt_01_cenas.txt
+│   │   │   ├── prompt_02_roteiro.txt
+│   │   │   ├── prompt_03_invideo.txt
+│   │   │   ├── prompt_03_invideo_ready.txt
+│   │   │   ├── prompt_04_descricao_hashtags.txt
+│   │   ├── 006-lixeira-com-sensor/
+│   │   │   ├── prompt_01_cenas.txt
+│   │   │   ├── prompt_02_roteiro.txt
+│   │   │   ├── prompt_03_invideo.txt
+│   │   │   ├── prompt_03_invideo_ready.txt
+│   │   │   ├── prompt_04_descricao_hashtags.txt
+│   │   ├── 007-repetidor-wifi/
+│   │   │   ├── prompt_01_cenas.txt
+│   │   │   ├── prompt_02_roteiro.txt
+│   │   │   ├── prompt_03_invideo.txt
+│   │   │   ├── prompt_03_invideo_ready.txt
+│   │   │   ├── prompt_04_descricao_hashtags.txt
+│   ├── script.txt
+│   ├── shotlist.md
+│   ├── thumbnail_prompts.txt
+│   ├── title.txt
+├── pipeline/
+│   ├── __init__.py
+│   ├── asset_prompter.py
+│   ├── index_csv_export.py
+│   ├── metadata_generator.py
+│   ├── script_generator.py
+│   ├── shotlist_builder.py
+│   ├── test_openai_api.py
+├── README.md
+├── requirements.txt
+├── tools/
+│   ├── fill_invideo_with_script.py
+│   ├── generate_first_image.py
+│   ├── listar_estrutura.py
+│   ├── make_prompt_packs.py
+│   ├── organize_outputs.py
+│   ├── pipeline_oneclick.py
+│   ├── run_prompt_packs_openai.py

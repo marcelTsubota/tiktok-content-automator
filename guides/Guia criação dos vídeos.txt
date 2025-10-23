@@ -1,0 +1,53 @@
+Título: 
+Descrição: 
+Link: 
+
+Roteiro da criação do conteúdo.
+==============================
+
+1. Escolher o produto.
+2. Escolher uma imagem do produto.
+3. Gerar 6 prompts no chatGPT para criação das cenas. [prompt_01]
+4. Gerar 6 cenas no chatGPT usando o prompt que foram criados.
+5. Gerar o roteiro do vídeo no chatGPT usando o prompt. [prompt_02]
+6. Gerar o vídeo no InVideo usando o roteiro criado no chatGPT. [prompt_03]
+7. Importar o vídeo e as imagens no capcut, editar e exportar.
+8. Gerar descrição e hashtags. [prompt_04]
+9. Gerar legendas.
+
+prompt_01 - cenas [ChatGPT] (obs.: colocar as imagens do produto)
+---------------------------
+Este é o meu produto: [produto]. Me dê 6 descrições de imagens em que ele aparece, sendo elas:
+1: uma pessoa usando o produto.
+2: o produto em uma vitrine.
+3: o produto em seu ambiente natural/local.
+4: você sugere uma descrição criativa. 
+5: você sugere uma descrição interessante. 
+6: você sugere uma descrição moderna.
+A descrição deve ser com base no produto da imagem enviada.
+Dimensões 9:16. Imagens para tiktok. Sem textos nas imagens.
+
+
+prompt_02 - roteiro [ChatGPT]:
+-----------------------------
+Crie o roteiro para o TikTok de 20seg falando sobre [produto].
+Comece o vídeo com a dor do espectador, gere curiosidade, desejo e em seguida comece a falar do produto.
+O foco do vídeo é vender, então faça como se fosse uma VSL.
+Envie apenas o roteiro, sem instruções de gravação. Seja criativo. Importante: Apenas e somente o roteiro.
+Não coloque divisão de tempo.
+
+prompt_04 - descrição [ChatGPT]:
+-------------------------------
+Crie a descrição do [produto] para post no tiktok e coloque 10 hashtags.
+
+prompt_03 - video [invideo]:
+----------------------------
+Esse é o roteiro do meu vídeo de vendas para o tiktok, dimensões 9:16. O produto é [produto].
+Important: No Captions, No avatar, No Narrator image. Crie a voz com essas falas:
+[roteiro Chatgpt]
+
+
+
+
+
+
