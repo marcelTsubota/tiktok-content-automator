@@ -2,3 +2,7 @@ openai>=1.40
 python-dotenv>=1.0.1
 PyYAML>=6.0.2
 tqdm>=4.66.5
+pandas>=2.2
+python-slugify>=8.0
+requests>=2.32
+Pillow>=10.4
