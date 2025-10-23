@@ -133,7 +133,6 @@ com 1–2 parágrafos + (opcional) bullets curtos e 10–15 hashtags relevantes 
         (pack_dir / "prompt_01_cenas.txt").write_text(prompt_01, encoding="utf-8")
         (pack_dir / "prompt_02_roteiro.txt").write_text(p02.strip() + "\n", encoding="utf-8")
         (pack_dir / "prompt_03_invideo.txt").write_text(p03.strip() + "\n", encoding="utf-8")
-        (pack_dir / "prompt_04_descricao_hashtags.txt").write_text(p04.strip() + "\n", encoding="utf-8")
 
         created += 1
         print(f"[{i:03d}] pack criado: {pack_dir.name}")
