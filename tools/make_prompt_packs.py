@@ -102,6 +102,12 @@ def main():
         )
         if urls:
             p01.append("Referências visuais (imagens reais do produto):\n" + "\n".join(urls))
+        p01.append(
+            "\nAgora, gere 6 descrições de imagem no formato abaixo, numeradas de 1 a 6.\n"
+            "Cada item deve começar com 'Gerar imagem X.' seguido de uma breve descrição.\n"
+            "Exemplo:\n"
+            "Gerar imagem 1. **Usando no Parque** Uma pessoa relaxando em um parque usando o produto.\n"
+        )
         prompt_01 = "\n".join(p01).strip() + "\n"
 
         p02 = f"""Gere um roteiro curto em pt-BR para TikTok do produto **{produto}**.
