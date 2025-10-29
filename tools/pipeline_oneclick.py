@@ -48,6 +48,18 @@ def main():
     idx = ROOT / "index_csv_export.py"
     if idx.exists():
         run([sys.executable, str(idx)])
+        
+    # 3) gerar imagens IA (6 por pack)
+    try:
+        print("\n🖼️  Chamando gerador de imagens IA (6 por pack)...")
+        run([
+            sys.executable, str(TOOLS / "generate_images_openai.py"),
+            "--packs-root", args.packs_root,
+            "--model", "gpt-image-1",
+            "--size", "1024x1536"
+        ])
+    except Exception as e:
+        print(f"⚠️  Falha ao gerar imagens IA: {e}")
 
     print("\n🎉 Pipeline concluído!")
 

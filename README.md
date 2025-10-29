@@ -5,7 +5,7 @@ O projeto lê uma planilha de produtos, gera prompts com base em um guia de cria
 
 ## COMANDO ÚNICO
 
-python tools\pipeline_oneclick.py --csv data\batch_items.csv --packs-root outputs\prompt_packs --final-root "C:\Users\marce\OneDrive\OneDrive (C)\Área de Trabalho\ExpressTechTips\estoque" --model gpt-4o-mini --temperature 0.7 --only-final --download-image --images-from csv --csv-path data\batch_items.csv --max-images 1
+python tools\pipeline_oneclick.py --csv data\batch_items.csv --packs-root outputs\prompt_packs --final-root "C:\Users\marce\OneDrive\OneDrive (C)\Área de Trabalho\ExpressTechTips\estoque" --model gpt-4o-mini --temperature 0.7 --only-final --download-image --images-from csv --csv-path data\batch_items.csv --max-images 1; python tools\generate_images_openai.py --packs-root outputs\prompt_packs --model gpt-image-1 --size 1024x1536 --source-root "C:\Users\marce\OneDrive\OneDrive (C)\Área de Trabalho\ExpressTechTips\estoque" --final-root "C:\Users\marce\OneDrive\OneDrive (C)\Área de Trabalho\ExpressTechTips\estoque"
 
 # --only-final [SOMENTE O ARQUIVO COM O RESULTADO]
 
