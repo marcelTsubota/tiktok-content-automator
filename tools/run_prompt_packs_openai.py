@@ -128,18 +128,6 @@ def run_roteiro(p02: str, model: str, temperature: float, max_words: int = 160) 
         out = ask_openai(f"{p02}\n\n{fix_prompt}\n\n---\nRascunho anterior (encurtar):\n{out}", model, temperature, system=MASTER_SYSTEM)
     return out
 
-def run_descricao(p04: str, model: str, temperature: float, min_tags: int = 10, max_tags: int = 15) -> str:
-    out = ask_openai(p04, model, temperature, system=MASTER_SYSTEM)
-    tags = extract_hashtags(out)
-    if not (min_tags <= len(tags) <= max_tags):
-        fix_prompt = (
-            f" ajuste a resposta para conter entre {min_tags} e {max_tags} hashtags reais do nicho (não genéricas demais). "
-            "Mantenha os parágrafos e bullets como estão."
-        )
-        out = ask_openai(f"{p04}\n\nA resposta veio com {len(tags)} hashtags;{fix_prompt}\n\n---\nVersão anterior (ajustar hashtags):\n{out}",
-                         model, temperature, system=MASTER_SYSTEM)
-    return out
-
 URL_PATTERN = re.compile(r"https?://[^\s)>\]]+", re.IGNORECASE)
 
 def parse_urls_from_p01(p01_text: Optional[str]) -> List[str]:
