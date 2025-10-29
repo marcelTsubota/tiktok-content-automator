@@ -1,152 +1,209 @@
 # tools/generate_images_openai.py
-# Gera 6 imagens por pack usando as descrições de cena (ChatGPT) e salva localmente.
-# Uso:
-#   python tools/generate_images_openai.py --packs-root outputs/prompt_packs --model gpt-image-1 --size 1024x1792 --overwrite
-#
-# Requisitos:
-#   pip install openai python-dotenv
+# ===============================================================
+# Gera imagens IA a partir dos prompts originais (seção "## IMAGENS (ChatGPT)").
+# Salva na mesma pasta externa (--final-root). Usa imagem-base se disponível;
+# se o SDK não tiver images.edit/edits, cai automaticamente para generate().
+# ===============================================================
 
-import argparse
-import base64
 import os
 import re
+import base64
+import argparse
 from pathlib import Path
-from typing import List
 from dotenv import load_dotenv
+from typing import List, Optional
+from PIL import Image
 
-DEFAULT_PACKS_ROOT = Path("outputs") / "prompt_packs"
+
+# ----------------- util -----------------
 
 def read(p: Path) -> str:
     return p.read_text(encoding="utf-8") if p.exists() else ""
 
-def write(p: Path, content: str):
-    p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text((content or "").strip() + "\n", encoding="utf-8")
+def write(p: Path, text: str):
+    p.write_text(text, encoding="utf-8")
 
-def split_to_6_blocks(text: str) -> List[str]:
-    # mesmo espírito do validador do seu runner
-    txt = text.strip()
-    if not txt:
-        return []
-    parts = re.split(r"(?:\n|\r\n)\s*(?:\d{1}[\)\.\:]\s+)", "\n" + txt)
-    parts = [p.strip() for p in parts if p.strip()]
-    if len(parts) == 6:
-        return parts
-    parts = re.split(r"(?:^|\n)\s*\d{1}\s*[:\-]\s+", txt)
-    parts = [p.strip() for p in parts if p.strip()]
-    if len(parts) == 6:
-        return parts
-    parts = [b.strip() for b in re.split(r"\n\s*\n", txt) if b.strip()]
-    # se vierem mais de 6 blocos por algum motivo, corta nos 6 primeiros
-    return parts[:6]
+def to_png(src: Path) -> Optional[Path]:
+    if not src or not src.exists():
+        return None
+    if src.suffix.lower() == ".png":
+        return src
+    png_path = src.with_suffix(".png")
+    img = Image.open(src).convert("RGBA")
+    png_path.parent.mkdir(parents=True, exist_ok=True)
+    img.save(png_path, format="PNG")
+    return png_path
+
+
+# ----------------- parsing -----------------
+
+SECTION_START = re.compile(r"^\s*##\s*IMAGENS\s*\(CHATGPT\)\s*$", re.IGNORECASE)
+SECTION_NEXT  = re.compile(r"^\s*##\s+", re.IGNORECASE)
+
+def extract_images_section(full_text: str) -> str:
+    """Recorta apenas a seção '## IMAGENS (ChatGPT)' até o próximo '##'."""
+    lines = full_text.splitlines()
+    in_sec = False
+    buf = []
+    for ln in lines:
+        if not in_sec and SECTION_START.match(ln):
+            in_sec = True
+            continue
+        if in_sec and SECTION_NEXT.match(ln):
+            break
+        if in_sec:
+            buf.append(ln)
+    # fallback: se não achou a seção, devolve o texto inteiro
+    return "\n".join(buf).strip() if buf else full_text
+
+def split_prompts(text: str) -> List[str]:
+    """
+    Divide o texto em prompts por marcadores como:
+    **Gerar imagem 1.** / Gerar imagem 2: / GERAR IMAGEM 3 -
+    Aceita variações, com ou sem negrito, e suporta quebra de linha ou não.
+    """
+    # força quebra de linha antes de cada "Gerar imagem"
+    normalized = re.sub(r"(\*\*?\s*Gerar\s+imagem\s*\d+[\.\:\-]?\s*\*\*?)", r"\n\1", text, flags=re.IGNORECASE)
+    parts = re.split(r"(?:\*\*)?\s*Gerar\s+imagem\s*\d+\s*[\.\:\-]?\s*(?:\*\*)?", normalized, flags=re.IGNORECASE)
+    blocks = [b.strip() for b in parts if b and b.strip()]
+    # fallback por segurança
+    if len(blocks) < 6:
+        blocks = [b.strip() for b in re.split(r"\n{2,}", normalized) if b.strip()]
+    return blocks
 
 def build_image_prompt(block: str) -> str:
-    """
-    Normaliza o texto do bloco para um prompt de imagem.
-    Garante: 9:16 vertical, sem texto/legendas, foco no produto/ambiente.
-    """
-    # remove numeração tipo "1) Título — texto"
-    block = re.sub(r"^\s*\d+\s*[\)\.\:\-]\s*", "", block).strip()
-    # opcional: se houver um título em primeira linha, mantemos como contexto curto
-    lines = [l.strip() for l in block.splitlines() if l.strip()]
-    if not lines:
-        return "Cena vertical 9:16, realista, iluminação natural, sem texto."
-    title = ""
-    body = " ".join(lines)
-    prompt = (
-        f"{body} | vertical 9:16, naturalista/realista, luz suave, profundidade de campo, "
-        f"sem texto/legendas, enquadramento limpo, nitidez alta."
-    )
-    return prompt
+    """Usa o texto original como prompt direto (limpa markdown leve)."""
+    clean = re.sub(r"\*\*Gerar\s+imagem\s*\d+\s*[\.\:\-]?\*\*", "", block, flags=re.IGNORECASE).strip()
+    clean = re.sub(r"[#>`*_]", "", clean).strip()
+    return clean
 
-def ensure_openai():
-    try:
-        from openai import OpenAI  # noqa
-    except Exception as e:
-        raise SystemExit("Falta o pacote 'openai'. Instale com: pip install openai") from e
 
-def generate_image_b64(client, model: str, prompt: str, size: str) -> bytes:
-    """
-    Usa a API de geração de imagens da OpenAI.
-    Documentação: https://platform.openai.com/docs/guides/images
-    """
-    resp = client.images.generate(
-        model=model,
-        prompt=prompt,
-        size=size,
-        # você pode ajustar: quality="high", style="natural"
-    )
+# ----------------- image base lookup -----------------
+
+def find_source_image(pack_dir: Path, source_root: Optional[Path]) -> Optional[Path]:
+    cands = []
+    if source_root and (source_root / pack_dir.name).exists():
+        cands += list((source_root / pack_dir.name).glob("*_img*.*"))
+    cands += list(pack_dir.glob("*_img*.*"))
+    for c in cands:
+        if c.suffix.lower() in [".png", ".jpg", ".jpeg", ".webp"]:
+            return c
+    return None
+
+
+# ----------------- openai helpers -----------------
+
+def generate_image_bytes_from_text(client, model: str, prompt: str, size: str) -> bytes:
+    resp = client.images.generate(model=model, prompt=prompt, size=size)
     b64 = resp.data[0].b64_json
     return base64.b64decode(b64)
 
+def generate_image_bytes_from_edit_with_fallback(client, model: str, source_png: Path, prompt: str, size: str) -> bytes:
+    """
+    Tenta image-to-image; se o SDK não tiver .edits/.edit, cai para generate().
+    """
+    try:
+        # SDKs mais antigos:
+        fn = getattr(client.images, "edits", None) or getattr(client.images, "edit", None)
+        if fn is None:
+            raise AttributeError("images.edits/edit não disponível; usando generate()")
+        with open(source_png, "rb") as f:
+            resp = fn(model=model, image=f, prompt=prompt, size=size)
+        b64 = resp.data[0].b64_json
+        return base64.b64decode(b64)
+    except Exception as e:
+        print(f"ℹ️  image-to-image indisponível ({e}); usando generate().")
+        return generate_image_bytes_from_text(client, model, prompt, size)
+
+
+# ----------------- main -----------------
+
 def main():
     load_dotenv()
-    if not os.getenv("OPENAI_API_KEY"):
-        raise SystemExit("Falta OPENAI_API_KEY no .env")
-
-    ensure_openai()
     from openai import OpenAI
     client = OpenAI()
 
-    ap = argparse.ArgumentParser(description="Gera imagens 9:16 a partir dos prompts de cena.")
-    ap.add_argument("--packs-root", default=str(DEFAULT_PACKS_ROOT), help="Pasta dos packs (default: outputs/prompt_packs)")
-    ap.add_argument("--model", default="gpt-image-1", help="Modelo de imagem (ex.: gpt-image-1)")
-    ap.add_argument("--size", default="1024x1792", help="Tamanho (9:16). Sug.: 1024x1792, 768x1365, 512x912")
-    ap.add_argument("--overwrite", action="store_true", help="Sobrescrever imagens existentes")
+    ap = argparse.ArgumentParser(description="Gera imagens IA a partir dos prompts de '## IMAGENS (ChatGPT)'.")
+    ap.add_argument("--packs-root", default="outputs/prompt_packs")
+    ap.add_argument("--model", default="gpt-image-1")
+    ap.add_argument("--size", default="1024x1536")
+    ap.add_argument("--overwrite", action="store_true")
+    ap.add_argument("--source-root", default="", help="Pasta externa com a imagem baixada (ex.: --final-root da pipeline)")
+    ap.add_argument("--final-root",  default="", help="Pasta externa onde salvar as PNGs (subpasta por produto)")
     args = ap.parse_args()
 
     packs_root = Path(args.packs_root)
+    source_root = Path(args.source_root) if args.source_root else None
+    final_root  = Path(args.final_root)  if args.final_root  else None
+
     if not packs_root.exists():
-        raise SystemExit(f"Pasta não encontrada: {packs_root.resolve()}")
+        raise SystemExit(f"Pasta de packs não encontrada: {packs_root}")
 
     packs = [p for p in packs_root.iterdir() if p.is_dir()]
-    if not packs:
-        raise SystemExit("Nenhum pack encontrado.")
+    total = 0
 
-    total_imgs = 0
     for pack in sorted(packs):
-        # preferir a RESPOSTA (já validada). Se não existir, cai no prompt original.
+        # 1) pega o texto de cenas
         respostas = pack / "RESPOSTA_prompt_01_cenas.txt"
-        original = pack / "prompt_01_cenas.txt"
-        text = read(respostas) or read(original)
-        if not text:
+        original  = pack / "prompt_01_cenas.txt"
+        full_text = read(respostas) or read(original)
+        if not full_text:
             print(f"⚠️  {pack.name}: sem texto de cenas — pulando.")
             continue
 
-        blocks = split_to_6_blocks(text)
-        if len(blocks) < 1:
-            print(f"⚠️  {pack.name}: não foi possível separar 6 cenas — pulando.")
+        only_images = extract_images_section(full_text)
+        blocks = split_prompts(only_images)
+        print(f"\n▶️  {pack.name}: gerando imagens ({len(blocks)} prompts detectados).")
+        if not blocks:
+            print("⚠️  Nenhum prompt de imagem detectado nesta seção — pulando.")
             continue
 
-        out_dir = pack / "images"
+        # 2) pasta de saída
+        out_dir = (final_root / pack.name) if final_root else pack
         out_dir.mkdir(parents=True, exist_ok=True)
         captions_path = out_dir / "_captions.txt"
         captions_lines = []
 
-        print(f"\n▶️  {pack.name}: gerando imagens ({len(blocks)} cenas detectadas; usarei até 6).")
-        for idx, block in enumerate(blocks[:6], start=1):
+        # 3) imagem base
+        source = find_source_image(pack, source_root)
+        source_png = to_png(source) if source else None
+        if source_png:
+            print(f"🧷 usando imagem-base: {source_png}")
+        else:
+            print("ℹ️  sem imagem-base; gerando a partir de texto puro")
+
+        # 4) gera cada prompt
+        for idx, block in enumerate(blocks, start=1):
+            prompt = build_image_prompt(block)
             png_path = out_dir / f"{idx:03d}.png"
+
             if png_path.exists() and not args.overwrite:
                 print(f"⏭  {png_path.name} já existe (use --overwrite para refazer).")
-                captions_lines.append(f"{png_path.name} | {block}")
+                captions_lines.append(f"{png_path.name} | {prompt}")
                 continue
 
-            prompt = build_image_prompt(block)
+            print(f"🎯 Gerando imagem {idx} ({png_path.name})...")
+
             try:
-                img_bytes = generate_image_b64(client, args.model, prompt, args.size)
+                if source_png:
+                    img_bytes = generate_image_bytes_from_edit_with_fallback(client, args.model, source_png, prompt, args.size)
+                else:
+                    img_bytes = generate_image_bytes_from_text(client, args.model, prompt, args.size)
+
                 png_path.write_bytes(img_bytes)
                 captions_lines.append(f"{png_path.name} | {prompt}")
-                total_imgs += 1
-                print(f"✅  salvo: {png_path.relative_to(pack)}")
+                total += 1
+                print(f"✅  salvo: {png_path}")
             except Exception as e:
-                err_path = out_dir / f"{idx:03d}_ERROR.txt"
-                write(err_path, f"Falha ao gerar esta cena.\nPrompt:\n{prompt}\n\nErro:\n{e}")
+                err = out_dir / f"{idx:03d}_ERROR.txt"
+                write(err, f"Prompt:\n{prompt}\n\nErro:\n{e}")
                 print(f"❌  erro na cena {idx}: {e}")
 
         write(captions_path, "\n".join(captions_lines))
-        print(f"🗂  legendas: {captions_path.relative_to(pack)}")
+        print(f"🗂  legendas: {captions_path}")
 
-    print(f"\n🎉 Concluído. Imagens geradas: {total_imgs}")
+    print(f"\n🎉 Concluído. Imagens geradas: {total}")
+
 
 if __name__ == "__main__":
     main()

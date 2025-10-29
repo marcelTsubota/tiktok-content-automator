@@ -228,6 +228,7 @@ def main():
     ap.add_argument("--model", default="gpt-4o-mini", help="Modelo OpenAI (ex: gpt-4o-mini, gpt-4.1-mini, etc.)")
     ap.add_argument("--temperature", type=float, default=0.7, help="Temperatura do LLM (0.0-1.0)")
     ap.add_argument("--skip-existing", action="store_true", help="Pular packs já processados")
+    ap.add_argument("--gen-images", action="store_true", help="Após gerar as cenas/roteiro, chama a geração de imagens por pack")
     ap.add_argument("--only-final", action="store_true", help="Não gerar intermediários")
     ap.add_argument("--final-root", default=None, help="Diretório para salvar os resultados finais")
     ap.add_argument("--download-image", action="store_true", help="Baixar imagem(ns) do produto para a pasta")
@@ -337,7 +338,7 @@ def main():
         full = []
         full.append(f"# {pack.name}\n")
         full.append("## IMAGENS (ChatGPT)\n"); full.append(imagens_out or "")
-        full.append("\n## ROTEIRO (ChatGPT)\n"); full.append(roteiro_out or "")
+        #full.append("\n## ROTEIRO (ChatGPT)\n"); full.append(roteiro_out or "")
         full.append("\n## INVIDEO (READY)\n"); full.append(invideo_ready or "")
         full.append("\n### DESCRIÇÃO (TIKTOK)\n"); full.append(desc_tiktok_out or "")
         write(final_path, "\n".join(full))
@@ -359,6 +360,14 @@ def main():
         total += 1
 
     print(f"\n🎉 Finalizado! {total} packs processados.")
+    if args.gen_images:
+        try:
+            import sys, subprocess
+            print("\n🖼️  Chamando gerador de imagens…")
+            subprocess.run([sys.executable, "tools/generate_images_openai.py",
+                            "--packs-root", str(packs_root)], check=False)
+        except Exception as e:
+            print(f"⚠️  Falha ao gerar imagens: {e}")
     print(f"↳ Origem dos packs: {packs_root.resolve()}")
     if final_root:
         print(f"↳ Resultados finais em: {final_root.resolve()}")
