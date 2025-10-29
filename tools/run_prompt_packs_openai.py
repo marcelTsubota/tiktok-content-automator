@@ -1,7 +1,7 @@
 # tools/run_prompt_packs_openai.py
 # Versão unificada com:
 #   --only-final   → não grava intermediários (RESPOSTA_*.txt)
-#   --final-root   → salva RESULTADO_COMPLETO.txt fora do projeto
+#   --final-root   → salva arquivo .txt fora do projeto
 #   --download-image / --images-from / --csv-path / --max-images → baixa imagens do produto e salva no mesmo dir do final
 #
 # Exemplos:
@@ -128,18 +128,6 @@ def run_roteiro(p02: str, model: str, temperature: float, max_words: int = 160) 
         out = ask_openai(f"{p02}\n\n{fix_prompt}\n\n---\nRascunho anterior (encurtar):\n{out}", model, temperature, system=MASTER_SYSTEM)
     return out
 
-def run_descricao(p04: str, model: str, temperature: float, min_tags: int = 10, max_tags: int = 15) -> str:
-    out = ask_openai(p04, model, temperature, system=MASTER_SYSTEM)
-    tags = extract_hashtags(out)
-    if not (min_tags <= len(tags) <= max_tags):
-        fix_prompt = (
-            f" ajuste a resposta para conter entre {min_tags} e {max_tags} hashtags reais do nicho (não genéricas demais). "
-            "Mantenha os parágrafos e bullets como estão."
-        )
-        out = ask_openai(f"{p04}\n\nA resposta veio com {len(tags)} hashtags;{fix_prompt}\n\n---\nVersão anterior (ajustar hashtags):\n{out}",
-                         model, temperature, system=MASTER_SYSTEM)
-    return out
-
 URL_PATTERN = re.compile(r"https?://[^\s)>\]]+", re.IGNORECASE)
 
 def parse_urls_from_p01(p01_text: Optional[str]) -> List[str]:
@@ -239,10 +227,10 @@ def main():
     ap.add_argument("--packs-root", default=str(PACKS_ROOT), help="Pasta com os packs (default: outputs/prompt_packs)")
     ap.add_argument("--model", default="gpt-4o-mini", help="Modelo OpenAI (ex: gpt-4o-mini, gpt-4.1-mini, etc.)")
     ap.add_argument("--temperature", type=float, default=0.7, help="Temperatura do LLM (0.0-1.0)")
-    ap.add_argument("--skip-existing", action="store_true", help="Não reprocessa packs que já têm RESULTADO_COMPLETO")
-    ap.add_argument("--only-final", action="store_true", help="Não gerar intermediários; salvar apenas RESULTADO_COMPLETO")
-    ap.add_argument("--final-root", default=None, help="Diretório externo para salvar somente os RESULTADO_COMPLETO (um .txt por pack)")
-    ap.add_argument("--download-image", action="store_true", help="Baixar imagem(ns) do produto para a mesma pasta do RESULTADO_COMPLETO")
+    ap.add_argument("--skip-existing", action="store_true", help="Pular packs já processados")
+    ap.add_argument("--only-final", action="store_true", help="Não gerar intermediários")
+    ap.add_argument("--final-root", default=None, help="Diretório para salvar os resultados finais")
+    ap.add_argument("--download-image", action="store_true", help="Baixar imagem(ns) do produto para a pasta")
     ap.add_argument("--images-from", choices=["csv", "p01"], default="p01", help="Origem das URLs: 'csv' (batch_items.csv) ou 'p01' (prompt_01_cenas.txt)")
     ap.add_argument("--csv-path", default="data/batch_items.csv", help="Caminho do CSV (usado se --images-from csv)")
     ap.add_argument("--max-images", type=int, default=1, help="Máximo de imagens para baixar por pack (default: 1)")
@@ -269,22 +257,13 @@ def main():
         """Diretório onde o final será gravado (pack ou final_root)."""
         return final_root if final_root else pack
 
-    def result_path_for(pack: Path) -> Path:
-        """Caminho do arquivo final."""
-        if final_root:
-            return final_root / f"{pack.name}.txt"
-        return pack / "RESULTADO_COMPLETO.txt"
-
-    def result_exists(pack: Path) -> bool:
-        return result_path_for(pack).exists()
-
     def write_if(path: Path, content: str):
         if not args.only_final:
             write(path, content)
 
     total = 0
     for pack in sorted(packs):
-        if args.skip_existing and result_exists(pack):
+        if args.skip_existing:
             print(f"⏭  pulando (já existe): {pack.name}")
             continue
 
@@ -293,7 +272,6 @@ def main():
         p01 = read(pack / "prompt_01_cenas.txt")
         p02 = read(pack / "prompt_02_roteiro.txt")
         p03 = read(pack / "prompt_03_invideo.txt")
-        p04 = read(pack / "prompt_04_descricao_hashtags.txt")
 
         if not p02:
             print(f"⚠️  {pack.name}: falta prompt_02_roteiro.txt — pulando.")

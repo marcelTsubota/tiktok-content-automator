@@ -53,9 +53,9 @@ def main():
     load_dotenv()
     if not os.getenv("OPENAI_API_KEY"):
         raise SystemExit("Falta OPENAI_API_KEY no .env")
-    ap = argparse.ArgumentParser(description="Gera 1 imagem 9:16 (sem textos) por pack a partir do RESULTADO_COMPLETO.")
+    ap = argparse.ArgumentParser(description="Gera 1 imagem 9:16 (sem textos) por pack a partir do arquivo .txt.")
     ap.add_argument("--packs-root", default="outputs/prompt_packs")
-    ap.add_argument("--final-root", default=None, help="Se os RESULTADO_COMPLETO estão fora do projeto, aponte aqui.")
+    ap.add_argument("--final-root", default=None, help="Se os arquivo .txt estão fora do projeto, aponte aqui.")
     ap.add_argument("--out-name", default="{pack}_gen1.png")
     ap.add_argument("--model", default="gpt-image-1")
     args = ap.parse_args()
@@ -74,7 +74,7 @@ def main():
             final_txt = final_root / f"{pack_name}.txt"
             dest_dir = final_root
         else:
-            final_txt = pack / "RESULTADO_COMPLETO.txt"
+            final_txt = (pack / f"{pack.name}.txt")
             dest_dir = pack
 
         txt = read_text(final_txt)

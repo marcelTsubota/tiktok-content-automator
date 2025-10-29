@@ -13,7 +13,7 @@ def main():
     ap = argparse.ArgumentParser(description="One-click: CSV -> packs -> prompts finais (+ download de imagem)")
     ap.add_argument("--csv", required=True, help="CSV com product_name/produto e shopee_image_urls")
     ap.add_argument("--packs-root", default=str(ROOT / "outputs" / "prompt_packs"))
-    ap.add_argument("--final-root", default="", help="Onde salvar os RESULTADO_COMPLETO.txt")
+    ap.add_argument("--final-root", default="", help="Onde salvar os arquivo .txt")
     ap.add_argument("--model", default="gpt-4o-mini")
     ap.add_argument("--temperature", type=float, default=0.7)
     ap.add_argument("--only-final", action="store_true", help="Não salvar intermediários RESPOSTA_*.txt")
@@ -30,7 +30,7 @@ def main():
          "--csv", args.csv,
          "--packs-root", args.packs_root])
 
-    # 2) executar e produzir os RESULTADO_COMPLETO (+ download de imagem)
+    # 2) executar e produzir os .txt (+ download de imagem)
     cmd = [sys.executable, str(TOOLS/"run_prompt_packs_openai.py"),
            "--packs-root", args.packs_root,
            "--model", args.model,
