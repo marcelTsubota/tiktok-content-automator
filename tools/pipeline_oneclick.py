@@ -43,32 +43,35 @@ def main():
             "--csv-path", args.csv_path,
             "--max-images", str(args.max_images)]
     run(cmd)
-
-    # (opcional) índice consolidado, se você usa o index_csv_export.py
-    idx = ROOT / "index_csv_export.py"
-    if idx.exists():
-        run([sys.executable, str(idx)])
         
     # 3) gerar imagens IA (6 por pack)
+    # try:
+    #     print("\n🖼️  Chamando gerador de imagens IA (6 por pack)...")
+    #     run([
+    #         sys.executable, str(TOOLS / "generate_images_openai.py"),
+    #         "--packs-root", args.packs_root,
+    #         "--model", "gpt-image-1",
+    #         "--size", "1024x1536"
+    #     ])
+    # except Exception as e:
+    #     print(f"⚠️  Falha ao gerar imagens IA: {e}")
+        
+    # 4) limpar pasta outputs (packs temporários)
     try:
-        print("\n🖼️  Chamando gerador de imagens IA (6 por pack)...")
-        subprocess.run([
-            sys.executable, str(TOOLS / "generate_images_openai.py"),
-            "--packs-root", args.packs_root,
-            "--model", "gpt-image-1",
-            "--size", "1024x1536",
-            "--source-root", args.final_root if args.final_root else "",
-            "--final-root",  args.final_root if args.final_root else "",
-            "--overwrite"
-        ], check=False)
+        import shutil
+        outputs_dir = Path(args.packs_root)
+        if outputs_dir.exists():
+            shutil.rmtree(outputs_dir)
+            print(f"\n🧹 Pasta temporária '{outputs_dir}' removida com sucesso!")
+        else:
+            print(f"\nℹ️  Pasta '{outputs_dir}' não encontrada (nada para limpar).")
     except Exception as e:
-        print(f"⚠️  Falha ao gerar imagens IA: {e}")
+        print(f"⚠️  Falha ao remover '{outputs_dir}': {e}")
+
 
     print("\n🎉 Pipeline concluído!")
 
 if __name__ == "__main__":
     main()
-
-
 
 

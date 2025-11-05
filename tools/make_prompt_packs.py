@@ -88,7 +88,7 @@ def main():
         urls = [u.strip() for u in urls_raw.split(";") if u.strip()] if urls_raw else []
 
         slug = slugify(produto)
-        pack_dir = out_root / f"{i:03d}-{slug}"
+        pack_dir = out_root / f"{i:03d}. {slug}"
         pack_dir.mkdir(parents=True, exist_ok=True)
 
         # --------- Templates ---------

@@ -36,6 +36,8 @@ def run():
         out.write_text(ready.strip() + "\n", encoding="utf-8")
         done += 1
         print(f"✅ preenchido: {pack.name}")
+        print(f"✅ novo: {pack.name}")
+        
 
     print(f"\n🎉 Pronto! {done} arquivos gerados com roteiro embutido.")
 
